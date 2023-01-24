@@ -33,6 +33,8 @@ import com.client.core.base.workflow.node.WorkflowAction;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Days;
@@ -51,6 +53,8 @@ import com.client.core.AppContext;
 import com.google.common.collect.Lists;
 
 public class Utility {
+    private static Log log = LogFactory.getLog(Utility.class);
+
 
     public static Map<? extends BullhornRelatedEntity, Set<String>> getRequestedFields(BullhornRelatedEntity[] relatedEntities,
                                                                                        List<? extends WorkflowAction<?, ?>> actions) {
@@ -609,13 +613,25 @@ public class Utility {
 
     public static <T extends QueryEntity, R> void queryAndProcessAll(Class<T> type, String where, Set<String> fields, Consumer<T> process) {
         queryForAll(type, where, fields, (batch) -> {
-            batch.parallelStream().forEach(process);
+            batch.parallelStream().forEach(item -> {
+                try {
+                    process.accept(item);
+                } catch (Exception e) {
+                    log.error("Failed to Process: ",e);
+                }
+            });
         });
     }
 
     public static <T extends QueryEntity, R> void sequentialQueryAndProcessAll(Class<T> type, String where, Set<String> fields, Consumer<T> process) {
         queryForAll(type, where, fields, (batch) -> {
-            batch.forEach(process);
+            batch.parallelStream().forEach(item -> {
+                try {
+                    process.accept(item);
+                } catch (Exception e) {
+                    log.error("Failed to Process: ",e);
+                }
+            });
         });
     }
 
@@ -693,13 +709,25 @@ public class Utility {
 
     public static <T extends SearchEntity, R> void searchAndProcessAll(Class<T> type, String where, Set<String> fields, Consumer<T> process) {
         searchForAll(type, where, fields, (batch) -> {
-            batch.parallelStream().forEach(process);
+            batch.parallelStream().forEach(item -> {
+                try {
+                    process.accept(item);
+                } catch (Exception e) {
+                    log.error("Failed to Process: ",e);
+                }
+            });
         });
     }
 
     public static <T extends SearchEntity, R> void sequentialSearchAndProcessAll(Class<T> type, String where, Set<String> fields, Consumer<T> process) {
         searchForAll(type, where, fields, (batch) -> {
-            batch.forEach(process);
+            batch.parallelStream().forEach(item -> {
+                try {
+                    process.accept(item);
+                } catch (Exception e) {
+                    log.error("Failed to Process: ",e);
+                }
+            });
         });
     }
 
